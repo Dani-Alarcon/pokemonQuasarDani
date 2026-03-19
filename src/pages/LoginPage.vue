@@ -17,12 +17,9 @@
             type="email" 
             outlined 
             rounded 
-            bg-color="white"
-            :rules="[val => !!val || 'El correu és obligatori']"
+            :rules="[val => !!val || 'Obligatori']"
           >
-            <template v-slot:prepend>
-              <q-icon name="email" color="primary" />
-            </template>
+            <template v-slot:prepend><q-icon name="email" color="primary" /></template>
           </q-input>
 
           <q-input 
@@ -31,12 +28,9 @@
             :type="esContrasenya ? 'password' : 'text'" 
             outlined
             rounded 
-            bg-color="white" 
-            :rules="[val => !!val || 'La contrasenya és obligatòria']"
+            :rules="[val => !!val || 'Obligatori']"
           >
-            <template v-slot:prepend>
-              <q-icon name="lock" color="primary" />
-            </template>
+            <template v-slot:prepend><q-icon name="lock" color="primary" /></template>
             <template v-slot:append>
               <q-icon 
                 :name="esContrasenya ? 'visibility_off' : 'visibility'" 
@@ -52,26 +46,12 @@
               type="submit" 
               color="primary" 
               rounded
-              class="full-width q-py-sm text-weight-bold" 
-              size="lg" 
+              class="full-width q-py-sm" 
               :loading="carregant" 
             />
           </div>
-
-          <q-btn 
-            flat 
-            no-caps 
-            label="No tens compte? Registra't" 
-            color="primary" 
-            class="full-width q-mt-sm"
-            to="/registro" 
-          />
         </q-form>
       </q-card>
-
-      <div class="text-center q-mt-xl text-grey-5 text-caption">
-        Versió 1.0.0 — Pokémon App
-      </div>
     </div>
   </q-page>
 </template>
@@ -84,7 +64,6 @@ import { useRouter } from 'vue-router'
 const $q = useQuasar()
 const router = useRouter()
 
-// Estats en català
 const esContrasenya = ref(true)
 const carregant = ref(false)
 
@@ -95,30 +74,32 @@ const dadesLogin = reactive({
 
 async function gestionarLogin() {
   carregant.value = true
+  try {    
+    const resposta = await fetch('http://10.0.2.2:3000/auth/login', {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dadesLogin)
+    })    
+    
+    const text = await resposta.text()
+    let dades = {}
+    
+    try {
+      dades = JSON.parse(text)
+    } catch { // <-- ¡SOLUCIONADO! Quitamos la (e) para que ESLint no llore
+      throw new Error('El servidor no ha enviat un JSON vàlid')
+    }
 
-  try {
-    console.log('Intentant fer login amb:', dadesLogin)
-        
-    await new Promise(resolve => setTimeout(resolve, 1500))
-        
-    await router.push('/pokemons')
-
-    $q.notify({
-      color: 'green-5',
-      textColor: 'white',
-      icon: 'cloud_done',
-      message: 'Benvingut entrenador!'
-    })
-
-  } catch (error) {
-    console.error('Error detallat:', error)
-
-    $q.notify({
-      color: 'red-5',
-      textColor: 'white',
-      icon: 'warning',
-      message: 'Error al iniciar sessió o ruta no trobada'
-    })
+    if (resposta.ok) {
+      $q.notify({ color: 'green', message: 'Benvingut!' })
+      router.push('/pokemons')
+    } else {
+      $q.notify({ color: 'red', message: dades.message || 'Error de login' })
+    }
+  } catch (err) {
+    console.error(err)
+    $q.notify({ color: 'negative', message: err.message, timeout: 5000 })
   } finally {
     carregant.value = false
   }
@@ -126,22 +107,10 @@ async function gestionarLogin() {
 </script>
 
 <style scoped>
-.rounded-borders {
-  border-radius: 20px;
-}
-
-.contenidor-login {
-  animation: fadeIn 0.8s ease-in-out;
-}
-
+.rounded-borders { border-radius: 20px; }
+.contenidor-login { animation: fadeIn 0.8s ease-in-out; }
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
