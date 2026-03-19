@@ -87,7 +87,7 @@ async function gestionarLogin() {
     
     try {
       dades = JSON.parse(text)
-    } catch { // <-- ¡SOLUCIONADO! Quitamos la (e) para que ESLint no llore
+    } catch { 
       throw new Error('El servidor no ha enviat un JSON vàlid')
     }
 
