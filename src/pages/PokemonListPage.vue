@@ -2,11 +2,20 @@
   <q-page padding class="bg-grey-1">
     <div class="q-mb-md q-px-sm">
       <h5 class="q-ma-none text-weight-bolder text-primary">La meva Pokédex</h5>
-      <p class="text-grey-7 q-mb-none">Tens {{ arrayProvaPokemons.length }} Pokémon registrats</p>
+      <p class="text-grey-7 q-mb-none">Tens {{ llistaPokemons.length }} Pokémon registrats</p>
     </div>
 
-    <div class="row q-col-gutter-md">
-      <div v-for="pokemon in arrayProvaPokemons" :key="pokemon.id" class="col-12">
+    <div v-if="carregant" class="flex flex-center q-py-xl">
+      <q-spinner-dots color="primary" size="3em" />
+    </div>
+
+    <div v-else-if="llistaPokemons.length === 0" class="text-center q-py-xl text-grey-6">
+      <q-icon name="catching_pokemon" size="4em" class="q-mb-sm" />
+      <div class="text-h6">Encara no tens cap Pokémon</div>
+    </div>
+
+    <div v-else class="row q-col-gutter-md">
+      <div v-for="pokemon in llistaPokemons" :key="pokemon.id" class="col-12">
         
         <q-card class="my-card shadow-2 rounded-borders-15">
           <q-card-section horizontal>
@@ -49,44 +58,56 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useQuasar } from 'quasar'
+import { useRouter } from 'vue-router'
 
+const $q = useQuasar()
+const router = useRouter()
 
-const arrayProvaPokemons = ref([
-  {
-    id: 1,
-    name: 'Pikachu',
-    type: 'Elèctric',
-    generation: 1,
-    imatge: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png'
-  },
-  {
-    id: 2,
-    name: 'Charmander',
-    type: 'Foc',
-    generation: 1,
-    imatge: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png'
-  },
-  {
-    id: 3,
-    name: 'Bulbasaur',
-    type: 'Planta',
-    generation: 1,
-    imatge: ''
+const llistaPokemons = ref([])
+const carregant = ref(true)
+
+async function carregarDades() {
+  try {
+    const resposta = await fetch('http://10.0.2.2:3000/api/pokemons', {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (resposta.status === 401) {
+      $q.notify({ color: 'warning', message: 'La sessió ha caducat' })
+      router.push('/')
+      return
+    }
+
+    if (!resposta.ok) {
+      throw new Error('Error al connectar amb el servidor')
+    }
+
+    const dades = await resposta.json()
+   
+    llistaPokemons.value = dades 
+
+  } catch (err) {
+    console.error('Error carregant pokemons:', err)
+    $q.notify({ color: 'negative', message: 'No s\'han pogut carregar els Pokémon' })
+  } finally {
+    carregant.value = false
   }
-])
+}
+
+
+onMounted(() => {
+  carregarDades()
+})
 </script>
 
 <style scoped>
-.rounded-borders-15 {
-  border-radius: 15px;
-}
-
-.my-card {
-  transition: transform 0.2s;
-}
-
-.my-card:active {
-  transform: scale(0.98); 
-}
+.rounded-borders-15 { border-radius: 15px; }
+.my-card { transition: transform 0.2s; }
+.my-card:active { transform: scale(0.98); }
 </style>
