@@ -77,7 +77,6 @@ async function gestionarLogin() {
   try {    
     const resposta = await fetch('http://10.0.2.2:3000/auth/login', {
       method: 'POST',
-      mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(dadesLogin)
     })    
@@ -88,10 +87,13 @@ async function gestionarLogin() {
     try {
       dades = JSON.parse(text)
     } catch { 
-      throw new Error('El servidor no ha enviat un JSON vàlid')
+      throw new Error('Error al iniciar sessió')
     }
 
     if (resposta.ok) {
+      // MAGIA MÓVIL: Guardamos la ID del usuario en la memoria del teléfono
+      localStorage.setItem('userId', dades.user.id)
+      
       $q.notify({ color: 'green', message: 'Benvingut!' })
       router.push('/pokemons')
     } else {

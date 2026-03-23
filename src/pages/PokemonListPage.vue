@@ -70,16 +70,27 @@ const carregant = ref(true)
 
 async function carregarDades() {
   try {
+    // 1. Recuperamos el ID del teléfono
+    const userId = localStorage.getItem('userId')
+
+    if (!userId) {
+      $q.notify({ color: 'warning', message: 'Has d\'iniciar sessió primer' })
+      router.push('/')
+      return
+    }
+
+    // 2. Se lo enviamos al backend en el formato que hemos preparado
     const resposta = await fetch('http://10.0.2.2:3000/api/pokemons', {
       method: 'GET',
-      credentials: 'include',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-user-id': userId
       }
     })
 
     if (resposta.status === 401) {
       $q.notify({ color: 'warning', message: 'La sessió ha caducat' })
+      localStorage.removeItem('userId')
       router.push('/')
       return
     }
@@ -89,17 +100,15 @@ async function carregarDades() {
     }
 
     const dades = await resposta.json()
-   
     llistaPokemons.value = dades 
 
   } catch (err) {
     console.error('Error carregant pokemons:', err)
-    $q.notify({ color: 'negative', message: 'No s\'han pogut carregar els Pokémon' })
+    $q.notify({ color: 'negative', message: err.message, timeout: 5000 })
   } finally {
     carregant.value = false
   }
 }
-
 
 onMounted(() => {
   carregarDades()
