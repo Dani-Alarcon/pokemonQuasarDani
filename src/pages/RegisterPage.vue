@@ -3,34 +3,48 @@
     <div class="contenidor-login q-pa-md full-width" style="max-width: 400px">
 
       <div class="text-center q-mb-xl">
-        <q-avatar size="100px" font-size="52px" color="primary" text-color="white" icon="bolt" class="shadow-5" />
-        <h4 class="text-weight-bolder q-mt-md q-mb-none text-primary">POKÉDEX</h4>
-        <div class="text-grey-7">Entra per gestionar el teu equip</div>
+        <q-avatar size="100px" font-size="52px" color="secondary" text-color="white" icon="person_add" class="shadow-5" />
+        <h4 class="text-weight-bolder q-mt-md q-mb-none text-secondary">NOU ENTRENADOR</h4>
+        <div class="text-grey-7">Uneix-te per crear el teu equip</div>
       </div>
 
       <q-card flat bordered class="rounded-borders q-pa-lg shadow-2">
-        <q-form @submit="gestionarLogin" class="q-gutter-y-md">
+        <q-form @submit="gestionarRegistre" class="q-gutter-y-md">
 
           <q-input 
-            v-model="dadesLogin.email" 
+            v-model="dadesRegistre.name" 
+            label="El teu nom" 
+            type="text" 
+            outlined 
+            rounded 
+            :rules="[val => !!val || 'El nom és obligatori']"
+          >
+            <template v-slot:prepend><q-icon name="person" color="secondary" /></template>
+          </q-input>
+
+          <q-input 
+            v-model="dadesRegistre.email" 
             label="Correu electrònic" 
             type="email" 
             outlined 
             rounded 
-            :rules="[val => !!val || 'Obligatori']"
+            :rules="[val => !!val || 'El correu és obligatori']"
           >
-            <template v-slot:prepend><q-icon name="email" color="primary" /></template>
+            <template v-slot:prepend><q-icon name="email" color="secondary" /></template>
           </q-input>
 
           <q-input 
-            v-model="dadesLogin.password" 
+            v-model="dadesRegistre.password" 
             label="Contrasenya" 
             :type="esContrasenya ? 'password' : 'text'" 
             outlined
             rounded 
-            :rules="[val => !!val || 'Obligatori']"
+            :rules="[
+              val => !!val || 'La contrasenya és obligatòria',
+              val => val.length >= 6 || 'Mínim 6 caràcters'
+            ]"
           >
-            <template v-slot:prepend><q-icon name="lock" color="primary" /></template>
+            <template v-slot:prepend><q-icon name="lock" color="secondary" /></template>
             <template v-slot:append>
               <q-icon 
                 :name="esContrasenya ? 'visibility_off' : 'visibility'" 
@@ -42,24 +56,23 @@
 
           <div class="q-mt-xl">
             <q-btn 
-              label="Iniciar Sessió" 
+              label="Registrar-me" 
               type="submit" 
-              color="primary" 
+              color="secondary" 
               rounded
               class="full-width q-py-sm q-mb-sm" 
               :loading="carregant" 
             />
             <q-btn 
-              label="Crear Compte" 
+              label="Tornar al Login" 
               flat
-              color="primary" 
+              color="grey-7" 
               rounded
               class="full-width q-py-sm" 
-              to="/register"
+              to="/login"
             />
           </div>
         </q-form>
-        
       </q-card>
     </div>
   </q-page>
@@ -76,19 +89,20 @@ const router = useRouter()
 const esContrasenya = ref(true)
 const carregant = ref(false)
 
-const dadesLogin = reactive({
+const dadesRegistre = reactive({
+  name: '',
   email: '',
   password: ''
 })
 
-async function gestionarLogin() {
+async function gestionarRegistre() {
   carregant.value = true
   try {    
-    const resposta = await fetch('http://10.0.2.2:3000/auth/login', {
+    const resposta = await fetch('http://10.0.2.2:3000/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dadesLogin)
-    })    
+      body: JSON.stringify(dadesRegistre)
+    })  
     
     const text = await resposta.text()
     let dades = {}
@@ -96,16 +110,14 @@ async function gestionarLogin() {
     try {
       dades = JSON.parse(text)
     } catch { 
-      throw new Error('Error al iniciar sessió')
+      throw new Error('Error al registrar-se')
     }
 
     if (resposta.ok) {      
-      localStorage.setItem('userId', dades.user.id)
-      
-      $q.notify({ color: 'green', message: 'Benvingut!' })
-      router.push('/pokemons')
+      $q.notify({ color: 'positive', message: 'Compte creat amb èxit! Ja pots iniciar sessió.' })
+      router.push('/login')
     } else {
-      $q.notify({ color: 'red', message: dades.message || 'Error de login' })
+      $q.notify({ color: 'negative', message: dades.message || 'Error durant el registre' })
     }
   } catch (err) {
     console.error(err)
