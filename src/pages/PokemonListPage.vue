@@ -42,7 +42,7 @@
 
           <q-card-actions align="right" class="q-py-sm">
             <q-btn flat round color="blue-7" icon="edit" />
-            <q-btn flat round color="red-7" icon="delete" />
+            <q-btn flat round color="red-7" icon="delete" @click="esborrarPokemon(pokemon.id, pokemon.name)" />
             <q-btn flat color="primary" label="Veure Detalls" no-caps />
           </q-card-actions>
         </q-card>
@@ -111,6 +111,46 @@ async function carregarDades() {
 onMounted(() => {
   carregarDades()
 })
+
+async function esborrarPokemon(id, nom) {
+  const confirmat = window.confirm(`Segur que vols alliberar a ${nom}? Aquesta acció no es pot desfer.`)
+  
+  if (!confirmat) return
+
+  try {
+    const userId = localStorage.getItem('userId')
+    if (!userId) {
+      $q.notify({ color: 'warning', message: 'Has d\'iniciar sessió primer' })
+      router.push('/')
+      return
+    }
+
+    const resposta = await fetch(`http://10.0.2.2:3000/api/pokemons?id=${id}`, {
+      method: 'DELETE',
+      headers: {
+        'x-user-id': userId 
+      }
+    })
+
+    if (resposta.status === 401) {
+      $q.notify({ color: 'warning', message: 'La sessió ha caducat' })
+      localStorage.removeItem('userId')
+      router.push('/')
+      return
+    }
+
+    if (!resposta.ok) {
+      throw new Error('Error al intentar esborrar el Pokémon')
+    }
+
+    llistaPokemons.value = llistaPokemons.value.filter(pokemon => pokemon.id !== id)
+    $q.notify({ color: 'positive', message: `${nom} ha estat alliberat correctament.` })
+
+  } catch (err) {
+    console.error('Error esborrant pokemon:', err)
+    $q.notify({ color: 'negative', message: err.message })
+  }
+}
 </script>
 
 <style scoped>
