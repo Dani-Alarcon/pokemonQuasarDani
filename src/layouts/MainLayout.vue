@@ -69,7 +69,7 @@
 
           <q-separator q-my-md />
 
-          <q-item clickable v-ripple class="text-red">
+          <q-item clickable v-ripple class="text-red" @click="tancarSessio">
             <q-item-section avatar>
               <q-icon name="logout" color="red" />
             </q-item-section>
@@ -87,16 +87,33 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 
 const leftDrawerOpen = ref(false)
+const router = useRouter()
+const $q = useQuasar()
 
 function toggleLeftDrawer () {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
+
+function tancarSessio() {
+  localStorage.removeItem('userId')
+  
+  leftDrawerOpen.value = false
+
+  $q.notify({
+    color: 'info',
+    message: 'Has tancat la sessió correctament',
+    icon: 'logout'
+  })
+  
+  router.push('/login') 
+}
 </script>
 
 <style scoped>
-/* Estilos para que el menú lateral se vea más "App" */
 .q-item.q-router-link--active {
   color: var(--q-primary);
   background: #e3f2fd;

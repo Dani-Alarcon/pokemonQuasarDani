@@ -103,7 +103,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 
@@ -116,6 +116,14 @@ const nouPokemon = reactive({
   type: '',
   generation: 1,
   imatge: ''
+})
+
+onMounted(() => {
+  const userId = localStorage.getItem('userId')
+  if (!userId) {
+    $q.notify({ color: 'warning', message: 'Has d\'iniciar sessió primer' })
+    router.push('/')
+  }
 })
 
 async function gestionarEnviament() {

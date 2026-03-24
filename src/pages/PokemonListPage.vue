@@ -42,8 +42,7 @@
 
           <q-card-actions align="right" class="q-py-sm">
             <q-btn flat round color="blue-7" icon="edit" :to="'/editar/' + pokemon.id" />
-            <q-btn flat round color="red-7" icon="delete" @click="esborrarPokemon(pokemon.id, pokemon.name)" />
-            <q-btn flat color="primary" label="Veure Detalls" no-caps />
+            <q-btn flat round color="red-7" icon="delete" @click="esborrarPokemon(pokemon.id, pokemon.name)" />            
           </q-card-actions>
         </q-card>
 
