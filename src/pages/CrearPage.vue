@@ -8,8 +8,7 @@
       </q-card-section>
 
       <q-card-section class="q-pa-lg">
-        <q-form @submit.prevent="gestionarEnviament" class="q-gutter-md">
-          
+        <q-form @submit.prevent="gestionarEnviament" class="q-gutter-md">          
           <q-input
             v-model="nouPokemon.name"
             label="Nom del Pokémon"

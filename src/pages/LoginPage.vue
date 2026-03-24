@@ -90,8 +90,7 @@ async function gestionarLogin() {
       throw new Error('Error al iniciar sessió')
     }
 
-    if (resposta.ok) {
-      // MAGIA MÓVIL: Guardamos la ID del usuario en la memoria del teléfono
+    if (resposta.ok) {      
       localStorage.setItem('userId', dades.user.id)
       
       $q.notify({ color: 'green', message: 'Benvingut!' })

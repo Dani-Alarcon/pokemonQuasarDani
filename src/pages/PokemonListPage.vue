@@ -69,8 +69,7 @@ const llistaPokemons = ref([])
 const carregant = ref(true)
 
 async function carregarDades() {
-  try {
-    // 1. Recuperamos el ID del teléfono
+  try {    
     const userId = localStorage.getItem('userId')
 
     if (!userId) {
@@ -78,8 +77,7 @@ async function carregarDades() {
       router.push('/')
       return
     }
-
-    // 2. Se lo enviamos al backend en el formato que hemos preparado
+    
     const resposta = await fetch('http://10.0.2.2:3000/api/pokemons', {
       method: 'GET',
       headers: {
