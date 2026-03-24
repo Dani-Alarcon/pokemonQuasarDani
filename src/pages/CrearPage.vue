@@ -81,6 +81,7 @@
                 rounded
                 class="full-width q-py-sm"
                 icon="save"
+                :loading="carregant" 
               />
             </div>
             <div class="col-12 col-sm-6">
@@ -102,7 +103,13 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
+import { useQuasar } from 'quasar'
+import { useRouter } from 'vue-router'
+
+const $q = useQuasar()
+const router = useRouter()
+const carregant = ref(false)
 
 const nouPokemon = reactive({
   name: '',
@@ -111,9 +118,47 @@ const nouPokemon = reactive({
   imatge: ''
 })
 
-function gestionarEnviament() {
-  console.log('Dades del nou Pokémon:', nouPokemon)
+async function gestionarEnviament() {
+  const userId = localStorage.getItem('userId')
 
+  if (!userId) {
+    $q.notify({ color: 'warning', message: 'Has d\'iniciar sessió primer' })
+    router.push('/')
+    return
+  }
+
+  carregant.value = true
+
+  try {
+    const resposta = await fetch('http://10.0.2.2:3000/api/pokemons', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': userId 
+      },
+      body: JSON.stringify(nouPokemon)
+    })
+
+    if (resposta.status === 401) {
+      $q.notify({ color: 'warning', message: 'La sessió ha caducat' })
+      localStorage.removeItem('userId')
+      router.push('/')
+      return
+    }
+
+    if (!resposta.ok) {
+      throw new Error('Error al registrar el Pokémon')
+    }
+    
+    $q.notify({ color: 'positive', message: 'Pokémon afegit correctament!' })
+    router.push('/pokemons')
+
+  } catch (err) {
+    console.error('Error creant pokemon:', err)
+    $q.notify({ color: 'negative', message: err.message, timeout: 5000 })
+  } finally {
+    carregant.value = false
+  }
 }
 </script>
 
