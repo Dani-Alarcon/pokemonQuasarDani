@@ -10,7 +10,10 @@ const routes = [
 
       { path: 'pokemons', component: () => import('pages/PokemonListPage.vue') },
 
-      { path: 'crear', component: () => import('pages/CrearPage.vue') }
+      { path: 'crear', component: () => import('pages/CrearPage.vue') },
+      {
+    path: '/editar/:id', component: () => import('pages/EditarPage.vue')
+  }
     ]
   },
 
